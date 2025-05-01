@@ -219,22 +219,23 @@ void terrainCloudHandler(const sensor_msgs::msg::PointCloud2::ConstSharedPtr ter
 void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
 {
   joyTime = nh->now().seconds();
-  joySpeedRaw = sqrt(joy->axes[3] * joy->axes[3] + joy->axes[4] * joy->axes[4]);
+  joySpeedRaw = sqrt(joy->axes[0] * joy->axes[0] + joy->axes[1] * joy->axes[1]);
   joySpeed = joySpeedRaw;
   if (joySpeed > 1.0) joySpeed = 1.0;
-  if (joy->axes[4] == 0) joySpeed = 0;
+  if (joy->axes[1] == 0) joySpeed = 0;
 
   if (joySpeed > 0) {
-    joyDir = atan2(joy->axes[3], joy->axes[4]) * 180 / PI;
-    if (joy->axes[4] < 0) joyDir *= -1;
+    joyDir = atan2(joy->axes[0], joy->axes[1]) * 180 / PI;
+    if (joy->axes[1] < 0) joyDir *= -1;
   }
 
-  if (joy->axes[4] < 0 && !twoWayDrive) joySpeed = 0;
+  if (joy->axes[1] < 0 && !twoWayDrive) joySpeed = 0;
 
-  if (joy->axes[2] > -0.1) {
+  if (joy->axes[4] < 0.1) {
     autonomyMode = false;
   } else {
     autonomyMode = true;
+    joySpeed = autonomySpeed;
   }
 
   if (joy->axes[5] > -0.1) {
@@ -582,9 +583,9 @@ int main(int argc, char** argv)
   nh->get_parameter("goalX", goalX);
   nh->get_parameter("goalY", goalY);
 
-  auto subOdometry = nh->create_subscription<nav_msgs::msg::Odometry>("/state_estimation", 5, odometryHandler);
+  auto subOdometry = nh->create_subscription<nav_msgs::msg::Odometry>("/dlio/odom_node/odom", 5, odometryHandler);
 
-  auto subLaserCloud = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/registered_scan", 5, laserCloudHandler);
+  auto subLaserCloud = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/dlio/odom_node/pointcloud/deskewed", 5, laserCloudHandler);
 
   auto subTerrainCloud = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/terrain_map", 5, terrainCloudHandler);
 
@@ -889,7 +890,7 @@ int main(int argc, char** argv)
           }
 
           path.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
-          path.header.frame_id = "vehicle";
+          path.header.frame_id = "base_link";
           pubPath->publish(path);
 
           #if PLOTPATHSET == 1
@@ -935,7 +936,7 @@ int main(int argc, char** argv)
           sensor_msgs::msg::PointCloud2 freePaths2;
           pcl::toROSMsg(*freePaths, freePaths2);
           freePaths2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
-          freePaths2.header.frame_id = "vehicle";
+          freePaths2.header.frame_id = "base_link";
           pubFreePaths->publish(freePaths2);
           #endif
         }
@@ -961,7 +962,7 @@ int main(int argc, char** argv)
         path.poses[0].pose.position.z = 0;
 
         path.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
-        path.header.frame_id = "vehicle";
+        path.header.frame_id = "base_link";
         pubPath->publish(path);
 
         #if PLOTPATHSET == 1
@@ -969,7 +970,7 @@ int main(int argc, char** argv)
         sensor_msgs::msg::PointCloud2 freePaths2;
         pcl::toROSMsg(*freePaths, freePaths2);
         freePaths2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
-        freePaths2.header.frame_id = "vehicle";
+        freePaths2.header.frame_id = "base_link";
         pubFreePaths->publish(freePaths2);
         #endif
       }
@@ -977,7 +978,7 @@ int main(int argc, char** argv)
       /*sensor_msgs::msg::PointCloud2 plannerCloud2;
       pcl::toROSMsg(*plannerCloudCrop, plannerCloud2);
       plannerCloud2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
-      plannerCloud2.header.frame_id = "vehicle";
+      plannerCloud2.header.frame_id = "base_link";
       pubLaserCloud->publish(plannerCloud2);*/
     }
 

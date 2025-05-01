@@ -149,22 +149,23 @@ void pathHandler(const nav_msgs::msg::Path::ConstSharedPtr pathIn)
 void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
 {
   joyTime = nh->now().seconds(); 
-  joySpeedRaw = sqrt(joy->axes[3] * joy->axes[3] + joy->axes[4] * joy->axes[4]);
+  joySpeedRaw = sqrt(joy->axes[0] * joy->axes[0] + joy->axes[1] * joy->axes[1]);
   joySpeed = joySpeedRaw;
   if (joySpeed > 1.0) joySpeed = 1.0;
-  if (joy->axes[4] == 0) joySpeed = 0;
-  joyYaw = joy->axes[3];
+  if (joy->axes[1] == 0) joySpeed = 0;
+  joyYaw = joy->axes[0];
   if (joySpeed == 0 && noRotAtStop) joyYaw = 0;
 
-  if (joy->axes[4] < 0 && !twoWayDrive) {
+  if (joy->axes[1] < 0 && !twoWayDrive) {
     joySpeed = 0;
     joyYaw = 0;
   }
 
-  if (joy->axes[2] > -0.1) {
+  if (joy->axes[4] < 0.1) {
     autonomyMode = false;
   } else {
     autonomyMode = true;
+    joySpeed = autonomySpeed;
   }
 }
 
@@ -247,7 +248,7 @@ int main(int argc, char** argv)
   nh->get_parameter("autonomySpeed", autonomySpeed);
   nh->get_parameter("joyToSpeedDelay", joyToSpeedDelay);
 
-  auto subOdom = nh->create_subscription<nav_msgs::msg::Odometry>("/state_estimation", 5, odomHandler);
+  auto subOdom = nh->create_subscription<nav_msgs::msg::Odometry>("/dlio/odom_node/odom", 5, odomHandler);
 
   auto subPath = nh->create_subscription<nav_msgs::msg::Path>("/path", 5, pathHandler);
 
@@ -260,7 +261,7 @@ int main(int argc, char** argv)
   auto pubSpeed = nh->create_publisher<geometry_msgs::msg::TwistStamped>("/cmd_vel", 5);
 
   geometry_msgs::msg::TwistStamped cmd_vel;
-  cmd_vel.header.frame_id = "vehicle";
+  cmd_vel.header.frame_id = "base_link";
 
   if (autonomyMode) {
     joySpeed = autonomySpeed / maxSpeed;
