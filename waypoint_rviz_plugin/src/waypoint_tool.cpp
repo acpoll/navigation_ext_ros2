@@ -76,7 +76,7 @@ void WaypointTool::onPoseSet(double x, double y, double theta)
 
   joy.header.stamp = clock_->now();
   joy.header.frame_id = "waypoint_tool";
-  pub_joy_->publish(joy);
+  // pub_joy_->publish(joy);
 
   geometry_msgs::msg::PointStamped waypoint;
   waypoint.header.frame_id = "map";
