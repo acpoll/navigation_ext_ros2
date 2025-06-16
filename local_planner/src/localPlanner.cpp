@@ -233,10 +233,16 @@ void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
 
   if (joy->axes[4] < 0.1) {
     autonomyMode = false;
-  } else {
+  } else if (joy->axes[4] > 0.1){
     autonomyMode = true;
     joySpeed = autonomySpeed;
   }
+
+  RCLCPP_INFO(nh->get_logger(), "autonomySpeed : %f", autonomySpeed);
+
+
+  // autonomyMode = true;
+  // joySpeed = autonomySpeed;
 
   if (joy->axes[5] > -0.1) {
     checkObstacle = true;
@@ -247,8 +253,13 @@ void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
 
 void goalHandler(const geometry_msgs::msg::PointStamped::ConstSharedPtr goal)
 {
-  goalX = goal->point.x;
-  goalY = goal->point.y;
+  if (autonomyMode){
+    for (int i = 0; i < 10; ++i) {
+      RCLCPP_INFO(nh->get_logger(), "autonomyMode : %d", autonomyMode);
+    }
+    goalX = goal->point.x;
+    goalY = goal->point.y;
+  }
 }
 
 void speedHandler(const std_msgs::msg::Float32::ConstSharedPtr speed)
