@@ -248,9 +248,6 @@ void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
 void goalHandler(const geometry_msgs::msg::PointStamped::ConstSharedPtr goal)
 {
   if (autonomyMode){
-    for (int i = 0; i < 10; ++i) {
-      RCLCPP_INFO(nh->get_logger(), "autonomyMode : %d", autonomyMode);
-    }
     goalX = goal->point.x;
     goalY = goal->point.y;
   }
