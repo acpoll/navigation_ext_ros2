@@ -163,21 +163,11 @@ void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
 
   if (joy->axes[4] < 0.1) {
     autonomyMode = false;
-    for (int i = 0; i < 5; ++i) {
-      RCLCPP_INFO(nh->get_logger(), "Entered here %d", i + 1);
-    }
   } else if (joy->axes[4] > 0.1) {
     autonomyMode = true;
     joySpeed = autonomySpeed;
-    for (int i = 0; i < 5; ++i) {
-      RCLCPP_INFO(nh->get_logger(), "Also entered here %d, setting autonomy to true", i + 1);
-    }
   }
 
-  RCLCPP_INFO(nh->get_logger(), "autonomySpeed eee: %f", autonomySpeed);
-
-  // autonomyMode = true;
-  // joySpeed = autonomySpeed;
 }
 
 void speedHandler(const std_msgs::msg::Float32::ConstSharedPtr speed)

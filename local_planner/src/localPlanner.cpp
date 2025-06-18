@@ -238,12 +238,6 @@ void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
     joySpeed = autonomySpeed;
   }
 
-  RCLCPP_INFO(nh->get_logger(), "autonomySpeed : %f", autonomySpeed);
-
-
-  // autonomyMode = true;
-  // joySpeed = autonomySpeed;
-
   if (joy->axes[5] > -0.1) {
     checkObstacle = true;
   } else {
