@@ -170,7 +170,7 @@ void laserCloudHandler(const sensor_msgs::msg::PointCloud2::ConstSharedPtr laser
                      (pointY - vehicleY) * (pointY - vehicleY));
     if (pointZ - vehicleZ > minRelZ - disRatioZ * dis &&
         pointZ - vehicleZ < maxRelZ + disRatioZ * dis &&
-        dis < terrainVoxelSize * (terrainVoxelHalfWidth + 1)) {
+        dis < terrainVoxelSize * (terrainVoxelHalfWidth + 1) && dis > 0.5) {
       point.x = pointX;
       point.y = pointY;
       point.z = pointZ;

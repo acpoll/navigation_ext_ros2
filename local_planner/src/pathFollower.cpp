@@ -271,7 +271,7 @@ int main(int argc, char** argv)
     else if (joySpeed > 1.0) joySpeed = 1.0;
   }
 
-  rclcpp::Rate rate(100);
+  rclcpp::Rate rate(50);
   bool status = rclcpp::ok();
   while (status) {
     rclcpp::spin_some(nh);

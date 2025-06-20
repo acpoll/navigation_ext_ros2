@@ -44,6 +44,7 @@ const double PI = 3.1415926;
 #define PLOTPATHSET 1
 
 string pathFolder;
+bool goalReached = true;
 double vehicleLength = 0.6;
 double vehicleWidth = 0.6;
 double sensorOffsetX = 0;
@@ -82,6 +83,7 @@ double autonomySpeed = 1.0;
 double joyToSpeedDelay = 2.0;
 double joyToCheckObstacleDelay = 5.0;
 double goalClearRange = 0.5;
+double goalReachedDist = 0.2;
 double goalX = 0;
 double goalY = 0;
 
@@ -248,6 +250,7 @@ void joystickHandler(const sensor_msgs::msg::Joy::ConstSharedPtr joy)
 void goalHandler(const geometry_msgs::msg::PointStamped::ConstSharedPtr goal)
 {
   if (autonomyMode){
+    goalReached = false;
     goalX = goal->point.x;
     goalY = goal->point.y;
   }
@@ -582,6 +585,7 @@ int main(int argc, char** argv)
   nh->get_parameter("joyToSpeedDelay", joyToSpeedDelay);
   nh->get_parameter("joyToCheckObstacleDelay", joyToCheckObstacleDelay);
   nh->get_parameter("goalClearRange", goalClearRange);
+  nh->get_parameter("goalReachedDist", goalReachedDist);
   nh->get_parameter("goalX", goalX);
   nh->get_parameter("goalY", goalY);
 
@@ -653,7 +657,7 @@ int main(int argc, char** argv)
   while (status) {
     rclcpp::spin_some(nh);
 
-    if (newLaserCloud || newTerrainCloud) {
+    if (!goalReached && (newLaserCloud || newTerrainCloud)) {
       if (newLaserCloud) {
         newLaserCloud = false;
 
@@ -736,6 +740,9 @@ int main(int argc, char** argv)
         float relativeGoalY = (-(goalX - vehicleX) * sinVehicleYaw + (goalY - vehicleY) * cosVehicleYaw);
 
         relativeGoalDis = sqrt(relativeGoalX * relativeGoalX + relativeGoalY * relativeGoalY);
+        
+        if(relativeGoalDis < goalReachedDist) goalReached = true;
+
         joyDir = atan2(relativeGoalY, relativeGoalX) * 180 / PI;
 
         if (!twoWayDrive) {
@@ -977,12 +984,36 @@ int main(int argc, char** argv)
         #endif
       }
 
+
+      if(goalReached)
+      {
+        path.poses.resize(1);
+        path.poses[0].pose.position.x = 0;
+        path.poses[0].pose.position.y = 0;
+        path.poses[0].pose.position.z = 0;
+
+        path.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
+        path.header.frame_id = "base_link";
+        pubPath->publish(path);
+
+        // #if PLOTPATHSET == 1
+        freePaths->clear();
+        sensor_msgs::msg::PointCloud2 freePaths2;
+        pcl::toROSMsg(*freePaths, freePaths2);
+        freePaths2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
+        freePaths2.header.frame_id = "base_link";
+        pubFreePaths->publish(freePaths2);
+        // #endif
+      }
+
       /*sensor_msgs::msg::PointCloud2 plannerCloud2;
       pcl::toROSMsg(*plannerCloudCrop, plannerCloud2);
       plannerCloud2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
       plannerCloud2.header.frame_id = "base_link";
       pubLaserCloud->publish(plannerCloud2);*/
     }
+
+
 
     status = rclcpp::ok();
     rate.sleep();
