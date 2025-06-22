@@ -371,7 +371,7 @@ int main(int argc, char** argv)
         cmd_vel.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomTime * 1e9));
         if (fabs(vehicleSpeed) <= maxAccel / 100.0) cmd_vel.twist.linear.x = 0;
         else cmd_vel.twist.linear.x = vehicleSpeed;
-        cmd_vel.twist.angular.z = vehicleYawRate;
+        cmd_vel.twist.angular.z = vehicleYawRate * -1.0;
         pubSpeed->publish(cmd_vel);
 
         pubSkipCount = pubSkipNum;
