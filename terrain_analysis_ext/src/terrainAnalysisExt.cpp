@@ -131,6 +131,13 @@ void laserCloudHandler(const sensor_msgs::msg::PointCloud2::ConstSharedPtr laser
   {
     point = laserCloud->points[i];
 
+    double dist = std::sqrt((point.x - vehicleX) * (point.x - vehicleX) + (point.y - vehicleY) * (point.y - vehicleY));
+    if (dist < 0.2)
+    {
+      continue;
+    }
+
+
     float pointX = point.x;
     float pointY = point.y;
     float pointZ = point.z;

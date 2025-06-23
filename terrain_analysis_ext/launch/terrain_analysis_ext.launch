@@ -14,7 +14,7 @@
     <param name="voxelTimeUpdateThre" value="2.0" />
     <param name="lowerBoundZ" value="-2.5" />
     <param name="upperBoundZ" value="2.5" />
-    <param name="disRatioZ" value="0.1" />
+    <param name="disRatioZ" value="0.2" />
     <param name="checkTerrainConn" value="$(var checkTerrainConn)" />
     <param name="terrainConnThre" value="0.5" />
     <param name="terrainUnderVehicle" value="-0.75" />
